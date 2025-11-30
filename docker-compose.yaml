@@ -1,0 +1,49 @@
+services:
+  comfyui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: komfyui-rocm:6.4-3.75
+    container_name: komfyui-rocm
+    restart: unless-stopped
+
+    # AMD ROCm specific device mappings
+    devices:
+      - "/dev/kfd"
+      - "/dev/dri"
+
+    # Permissions required for GPU access
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    # 'render' and 'video' groups are often required for GPU access inside the container
+    group_add:
+      - video
+#      - render
+    # IPC host is recommended for PyTorch to avoid shared memory errors with large models
+    ipc: host
+    working_dir: /app
+    ports:
+      - "8188:8188"
+
+    volumes:
+      # This maps a local folder 'comfy_data' to '/app' inside the container.
+      # Because of our entrypoint.sh, this folder will be auto-populated 
+      # on the first run, and all changes (new nodes, models) will persist here.
+      - ./comfy_data:/app
+      - ~/comfy-storage/models:/app/models
+      - ~/comfy-storage/output:/app/output
+ 
+      # Optional: You can map specific external model folders if you have them elsewhere
+      # - /path/to/your/checkpoints:/app/models/checkpoints
+
+    command: ["python3", "main.py", "--listen", "0.0.0.0", "--use-pytorch-cross-attention", "--bf16-vae", "--disable-xformers", "--disable-smart-memory"]
+    environment:
+      # You can override CLI args here. 
+      # Note: The Dockerfile CMD already defaults to --listen and --use-pytorch-cross-attention
+#      - CLI_ARGS=--preview-method auto
+
+      # HIP/ROCm Environment tweaks
+      - TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1
+      - HSA_OVERRIDE_GFX_VERSION=12.0.1 # Uncomment and adjust if you have a specific card (like 7900XTX often needs this)
