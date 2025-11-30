@@ -10,6 +10,9 @@ COMFYUI_VERSION="${COMFYUI_VERSION:-v0.3.75}"
 MANAGER_VERSION="${COMFYUI_MANAGER_VERSION:-3.37.1}"
 
 FORCE_NODE_CHECK="${FORCE_NODE_CHECK:-false}"
+TORCH_VERSION="2.9.1"
+TORCH_VISION_VERSION="0.24.1"
+TORCH_AUDIO_VERSION="2.9.1"
 
 # ===============================================================================================
 # 1. VIRTUAL ENVIRONMENT SETUP
@@ -92,6 +95,9 @@ if [ ! -f "${APP_DIR}/main.py" ]; then
     
     cd ${APP_DIR}
     pip install --no-cache-dir -r requirements.txt
+    pip uninstall -y torch torchaudio torchvision
+    pip install --no-cache-dir torch==${TORCH_VERSION} torchvision==${TORCH_VISION_VERSION} torchaudio==${TORCH_AUDIO_VERSION} --index-url https://download.pytorch.org/whl/rocm6.4
+
 else
     echo "Container: ComfyUI found."
 fi
