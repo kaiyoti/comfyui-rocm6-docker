@@ -23,7 +23,7 @@ services:
 #      - render
     # IPC host is recommended for PyTorch to avoid shared memory errors with large models
     ipc: host
-    working_dir: /app
+#    working_dir: /app
     ports:
       - "8188:8188"
 
@@ -32,8 +32,10 @@ services:
       # Because of our entrypoint.sh, this folder will be auto-populated 
       # on the first run, and all changes (new nodes, models) will persist here.
       - ./comfy_data:/app
+      - ~/comfy-storage/venv:/venv
       - ~/comfy-storage/models:/app/models
       - ~/comfy-storage/output:/app/output
+      - ~/comfy-storage/workflows:/app/user/default/workflows
  
       # Optional: You can map specific external model folders if you have them elsewhere
       # - /path/to/your/checkpoints:/app/models/checkpoints
